@@ -1,0 +1,14 @@
+galaxy_info:
+  author: Suzuki Shunsuke
+  description: Download and install a software
+  license: MIT
+  # http://docs.ansible.com/ansible/latest/tempfile_module.html
+  # https://docs.ansible.com/ansible/2.4/include_tasks_module.html
+  min_ansible_version: 2.4
+  github_branch: master
+  platforms:
+    - name: GenericLinux
+      versions:
+        - any
+  galaxy_tags: []
+dependencies: []

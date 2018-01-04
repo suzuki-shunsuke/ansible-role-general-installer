@@ -1,0 +1,54 @@
+---
+- name: check whether the software has already installed
+  stat:
+    path: "{{general_installer_checked_file|replace_dict(general_installer_params)}}"
+  register: general_installer_rgst_stat_checked_file
+  become: no
+  when: general_installer_checked_file is defined and general_installer_checked_file
+- block:
+  - name: mkdir the unarchive directory
+    file:
+      state: directory
+      dest: "{{general_installer_unarchive_dest|replace_dict(general_installer_params)}}"
+    when: general_installer_unarchive_dest is defined
+  - name: create the temporary working directory
+    tempfile:
+      state: directory
+    register: general_installer_working_dir
+    become: no
+    when: general_installer_unarchive_dest is undefined
+  - block:
+    - name: download and unarchive package
+      unarchive:
+        src: "{{general_installer_uri|replace_dict(general_installer_params)}}"
+        dest: "{{general_installer_unarchive_dest is defined|ternary(general_installer_unarchive_dest, general_installer_working_dir.path)|replace_dict(general_installer_params)}}"
+        keep_newer: yes
+        remote_src: yes
+      when: general_installer_uri|replace_dict(general_installer_params)|urlsplit('path')|basename|is_archived(general_installer_unarchived_suffixes)
+    - name: download package
+      get_url:
+        url: "{{general_installer_uri|replace_dict(general_installer_params)}}"
+        dest: "{{general_installer_unarchive_dest is defined|ternary(general_installer_unarchive_dest, general_installer_working_dir.path)|replace_dict(general_installer_params)}}"
+      when: not general_installer_uri|replace_dict(general_installer_params)|urlsplit('path')|basename|is_archived(general_installer_unarchived_suffixes)
+  - name: create the install directory
+    file:
+      state: directory
+      dest: "{{item.dest|dirname|replace_dict(general_installer_params)}}"
+    with_items: "{{general_installer_files}}"
+  - name: install the software
+    copy:
+      src: "{{general_installer_unarchive_dest is defined|ternary(general_installer_unarchive_dest, general_installer_working_dir.path)|replace_dict(general_installer_params)}}/{{item.src|replace_dict(general_installer_params)}}"
+      dest: "{{item.dest|replace_dict(general_installer_params)}}"
+      mode: "{{item.mode|default(0755)}}"
+      remote_src: yes
+    with_items: "{{general_installer_files}}"
+  - name: remove the temporary working directory
+    file:
+      state: absent
+      path: "{{general_installer_working_dir.path}}"
+  when: general_installer_checked_file is undefined or not general_installer_checked_file or not general_installer_rgst_stat_checked_file.stat.exists
+- name: create symbolic links
+  include_tasks: link.yml
+  with_dict: "{{general_installer_links}}"
+  loop_control:
+    loop_var: link

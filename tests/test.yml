@@ -1,0 +1,44 @@
+---
+- hosts: all
+  vars:
+    nonroot: "{{(ansible_env.USER is undefined)|ternary(ansible_env.HOME != '/root', ansible_env.USER != 'root')}}"
+  pre_tasks:
+    - name: install unzip (RedHat)
+      yum:
+        name: unzip
+        update_cache: yes
+      become: "{{nonroot}}"
+      when: ansible_os_family == "RedHat"
+    - name: install unzip (Debian)
+      apt:
+        name: unzip
+        update_cache: yes
+      become: "{{nonroot}}"
+      when: ansible_os_family == "Debian"
+  roles:
+    # Install Consul
+    - role: ansible-role-general-installer
+      general_installer_uri: https://releases.hashicorp.com/consul/$VERSION/consul_$VERSION_$ARCH.zip
+      general_installer_checked_file: /usr/local/bin/consul-$VERSION
+      general_installer_files:
+        - src: consul
+          dest: /usr/local/bin/consul-$VERSION
+      general_installer_links:
+        /usr/local/bin/consul: /usr/local/bin/consul-$VERSION
+      general_installer_params:
+        "$VERSION": 1.0.0
+        "$ARCH": linux_amd64
+      become: "{{nonroot}}"
+    # Install jq
+    - role: ansible-role-general-installer
+      general_installer_uri: https://github.com/stedolan/jq/releases/download/jq-$VERSION/jq-$ARCH
+      general_installer_checked_file: /usr/local/bin/jq-$VERSION
+      general_installer_files:
+        - src: jq-$ARCH
+          dest: /usr/local/bin/jq-$VERSION
+      general_installer_links:
+        /usr/local/bin/jq: /usr/local/bin/jq-$VERSION
+      general_installer_params:
+        "$VERSION": "1.5"
+        "$ARCH": linux64
+      become: "{{nonroot}}"
