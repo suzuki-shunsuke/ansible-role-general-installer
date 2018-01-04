@@ -1,5 +1,7 @@
 # ansible-role-general-installer
 
+[![Build Status](https://travis-ci.org/suzuki-shunsuke/ansible-role-general-installer.svg?branch=master)](https://travis-ci.org/suzuki-shunsuke/ansible-role-general-installer)
+
 ansible role to download and install software
 
 * [suzuki-shunsuke.general-installer](https://galaxy.ansible.com/suzuki-shunsuke/general-installer/)
