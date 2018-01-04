@@ -1,0 +1,11 @@
+---
+general_installer_links: {}
+general_installer_params: {}
+general_installer_files: []
+general_installer_unarchived_suffixes:
+  - .tgz
+  - .zip
+  - .tar
+  - .tar.gz
+  - .tar.bz2
+  - .tar.xz

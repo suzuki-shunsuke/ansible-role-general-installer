@@ -1,0 +1,18 @@
+---
+- name: check the symbolic link to the software
+  stat:
+    path: "{{link.key|replace_dict(general_installer_params)}}"
+  register: general_installer_link
+  become: no
+- name: remove the symbolic link
+  file:
+    state: absent
+    path: "{{link.key|replace_dict(general_installer_params)}}"
+  when: general_installer_link.stat.exists and (not general_installer_link.stat.islnk or general_installer_link.stat.lnk_source != src)
+  vars:
+    src: "{{link.value|replace_dict(general_installer_params)}}"
+- name: create the symbolic link
+  file:
+    state: link
+    src: "{{link.value|replace_dict(general_installer_params)}}"
+    dest: "{{link.key|replace_dict(general_installer_params)}}"
